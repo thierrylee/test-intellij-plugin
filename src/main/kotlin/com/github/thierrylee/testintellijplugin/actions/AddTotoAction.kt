@@ -11,45 +11,54 @@ class AddTotoAction: AnAction() {
 
     override fun actionPerformed(action: AnActionEvent) {
         val fileContent = action.getRequiredData(LangDataKeys.EDITOR).document.text
+        generateClassDoc(action)
+        showNotification(action, "Class documentation added for class ${findClass(fileContent)}")
+    }
 
-        val classDoc = "/** Methods :\n * ${findMethods(fileContent).joinToString("\n * ")}\n */\n"
-        val classLineNumber = getClassLineNumber(fileContent)
+    private fun generateClassDoc(action: AnActionEvent) {
+        val fileContent = action.getRequiredData(LangDataKeys.EDITOR).document.text
 
         WriteCommandAction.runWriteCommandAction(action.project) {
             val document = action.getRequiredData(LangDataKeys.EDITOR).document
-            val charOffset = document.getLineStartOffset(classLineNumber)
-            document.insertString(charOffset, classDoc)
+            val charOffset = document.getLineStartOffset(getClassLineNumber(fileContent))
+            document.insertString(charOffset, generateClassDoc(fileContent))
         }
-
-        NotificationGroupManager.getInstance()
-            .getNotificationGroup("ClassDoc")
-            .createNotification(
-                "Class documentation added for class ${findClass(fileContent)}",
-                NotificationType.INFORMATION
-            )
-            .notify(action.project)
     }
 
-    private fun findMethods(text: String): List<String> {
-        return text.split("\n")
+    private fun generateClassDoc(fileContent: String): String {
+        return "/** Methods :\n * ${findMethods(fileContent).joinToString("\n * ")}\n */\n"
+    }
+
+    private fun findMethods(fileContent: String): List<String> {
+        return fileContent.split("\n")
             .filter { it.contains("fun") }
             .map { it.trim() }
             .map { it.substringAfter("fun").substringBefore("(").trim() }
             .filter { it.isNotEmpty() }
     }
 
-    private fun getClassLineNumber(text: String): Int {
-        return text.split("\n")
+    private fun getClassLineNumber(fileContent: String): Int {
+        return fileContent.split("\n")
             .indexOfFirst { it.contains("class ") }
     }
 
-    private fun findClass(text: String): String {
-        return text.split("\n")
+    private fun findClass(fileContent: String): String {
+        return fileContent.split("\n")
             .firstOrNull { it.contains("class ") }
             ?.substringAfter("class ")
             ?.substringBefore("{")
             ?.trim()
             ?: ""
+    }
+
+    private fun showNotification(action: AnActionEvent, content: String) {
+        NotificationGroupManager.getInstance()
+            .getNotificationGroup("ClassDoc")
+            .createNotification(
+                content,
+                NotificationType.INFORMATION
+            )
+            .notify(action.project)
     }
 
 }
