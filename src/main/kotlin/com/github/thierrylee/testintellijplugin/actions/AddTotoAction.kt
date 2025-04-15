@@ -1,5 +1,7 @@
 package com.github.thierrylee.testintellijplugin.actions
 
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.LangDataKeys
@@ -18,6 +20,14 @@ class AddTotoAction: AnAction() {
             val charOffset = document.getLineStartOffset(classLineNumber)
             document.insertString(charOffset, classDoc)
         }
+
+        NotificationGroupManager.getInstance()
+            .getNotificationGroup("ClassDoc")
+            .createNotification(
+                "Class documentation added for class ${findClass(fileContent)}",
+                NotificationType.INFORMATION
+            )
+            .notify(action.project)
     }
 
     private fun findMethods(text: String): List<String> {
@@ -31,6 +41,15 @@ class AddTotoAction: AnAction() {
     private fun getClassLineNumber(text: String): Int {
         return text.split("\n")
             .indexOfFirst { it.contains("class ") }
+    }
+
+    private fun findClass(text: String): String {
+        return text.split("\n")
+            .firstOrNull { it.contains("class ") }
+            ?.substringAfter("class ")
+            ?.substringBefore("{")
+            ?.trim()
+            ?: ""
     }
 
 }

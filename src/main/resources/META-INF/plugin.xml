@@ -11,6 +11,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow factoryClass="com.github.thierrylee.testintellijplugin.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
         <postStartupActivity implementation="com.github.thierrylee.testintellijplugin.startup.MyProjectActivity" />
+        <notificationGroup id="ClassDoc" displayType="BALLOON" />
     </extensions>
     <actions>
         <action id="com.github.thierrylee.testintellijplugin.actions.AddTotoAction"
